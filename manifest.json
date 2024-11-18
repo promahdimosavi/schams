@@ -1,6 +1,6 @@
 {
-    "name": "نام اپلیکیشن شما",
+    "name": "mody",
     "url": "https://promahdimosavi.github.io/schams/",
-    "iconUrl": "https://yourwebsite.com/icon.png",
+    "iconUrl": "https://promahdimosavi.github.io/schams/icon.png",
     "permissions": ["ton_send", "ton_sign"]
   }
