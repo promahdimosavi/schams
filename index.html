@@ -3,102 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Tonkeeper Wallet</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tonclient/core@0.34.0/dist/ton-client-core.js"></script>
+    <title>اتصال به کیف پول Tonkeeper</title>
+    <script src="https://cdn.jsdelivr.net/npm/tonweb/dist/tonweb.bundle.min.js"></script>
 </head>
 <body>
-    <h1>اتصال کیف پول Tonkeeper</h1>
-
-    <!-- دکمه برای اتصال کیف پول -->
+    <h1>اتصال به کیف پول Tonkeeper</h1>
     <button id="connectButton">اتصال به کیف پول</button>
-
-    <!-- نمایش آدرس کیف پول و موجودی -->
     <div id="walletInfo"></div>
-
-    <!-- فرم ارسال تراکنش -->
-    <div id="transactionForm" style="display: none;">
+    <div id="transactionForm" style="display:none;">
         <h2>ارسال تراکنش</h2>
         <input type="text" id="recipientAddress" placeholder="آدرس گیرنده" />
-        <input type="number" id="amount" placeholder="مقدار توکن" />
-        <button id="sendTransaction">ارسال</button>
+        <input type="number" id="amount" placeholder="مقدار (TON)" />
+        <button id="sendTransaction">ارسال تراکنش</button>
     </div>
 
     <script>
-        // Initialize TON Client
-        const tonClient = new TonClient({ network: { server_address: "https://main.ton.dev" } });
+        let tonWeb = new TonWeb();  // راه‌اندازی TonWeb SDK
         let wallet = null;
 
-        // Event Listener for Connect Button
-        document.getElementById("connectButton").addEventListener("click", async function() {
+        // اتصال به کیف پول
+        document.getElementById('connectButton').addEventListener('click', async () => {
             try {
-                // اتصال به کیف پول Tonkeeper
-                const walletData = await tonClient.wallets.getAddress();
-                wallet = walletData;
-                document.getElementById("walletInfo").innerHTML = `
-                    <p>آدرس کیف پول: ${wallet.address}</p>
-                    <button id="checkBalance">بررسی موجودی</button>
-                    <button id="showTransactionForm">ارسال تراکنش</button>
-                `;
+                wallet = await tonWeb.connectWallet();  // درخواست اتصال به کیف پول
 
-                // نمایش فرم ارسال تراکنش
-                document.getElementById("showTransactionForm").addEventListener("click", function() {
-                    document.getElementById("transactionForm").style.display = "block";
-                });
-
-                // بررسی موجودی کیف پول
-                document.getElementById("checkBalance").addEventListener("click", async function() {
-                    const balance = await getWalletBalance(wallet.address);
-                    alert("موجودی کیف پول: " + balance + " TON");
-                });
-
+                if (wallet) {
+                    const address = await wallet.getAddress();
+                    document.getElementById('walletInfo').innerHTML = `
+                        <p>آدرس کیف پول شما: ${address}</p>
+                        <button id="checkBalance">بررسی موجودی</button>
+                        <button id="showTransactionForm">ارسال تراکنش</button>
+                    `;
+                }
             } catch (error) {
-                alert("اتصال به کیف پول با خطا مواجه شد: " + error.message);
+                console.error('اتصال به کیف پول با خطا مواجه شد: ', error);
+                alert('خطا در اتصال به کیف پول');
             }
         });
 
-        // ارسال تراکنش
-        document.getElementById("sendTransaction").addEventListener("click", async function() {
-            const recipient = document.getElementById("recipientAddress").value;
-            const amount = document.getElementById("amount").value;
+        // بررسی موجودی کیف پول
+        document.getElementById('checkBalance').addEventListener('click', async () => {
+            try {
+                const balance = await wallet.getBalance();
+                alert(`موجودی کیف پول: ${balance / 1e9} TON`);
+            } catch (error) {
+                alert('خطا در دریافت موجودی');
+            }
+        });
 
-            if (!recipient || !amount) {
-                alert("لطفاً تمام فیلدها را پر کنید");
+        // نمایش فرم ارسال تراکنش
+        document.getElementById('showTransactionForm').addEventListener('click', () => {
+            document.getElementById('transactionForm').style.display = 'block';
+        });
+
+        // ارسال تراکنش
+        document.getElementById('sendTransaction').addEventListener('click', async () => {
+            const recipientAddress = document.getElementById('recipientAddress').value;
+            const amount = document.getElementById('amount').value;
+
+            if (!recipientAddress || !amount) {
+                alert('لطفاً تمام فیلدها را پر کنید');
                 return;
             }
 
             try {
-                const txResult = await sendTransaction(wallet.address, recipient, amount);
-                alert("تراکنش با موفقیت ارسال شد. شناسه تراکنش: " + txResult.transaction_id);
+                const txResult = await wallet.sendTransaction({
+                    to: recipientAddress,
+                    amount: amount * 1e9,  // مقدار به nanoTON تبدیل می‌شود
+                });
+
+                alert('تراکنش با موفقیت ارسال شد. شناسه تراکنش: ' + txResult.transaction_id);
             } catch (error) {
-                alert("خطا در ارسال تراکنش: " + error.message);
+                alert('خطا در ارسال تراکنش');
             }
         });
-
-        // تابع برای گرفتن موجودی کیف پول
-        async function getWalletBalance(address) {
-            // درخواست موجودی از بلاک‌چین Ton
-            const response = await tonClient.net.query_collection({
-                collection: "accounts",
-                filter: { id: { eq: address } },
-                result: "balance"
-            });
-
-            return response.result[0].balance / 1e9; // موجودی به واحد TON
-        }
-
-        // تابع برای ارسال تراکنش
-        async function sendTransaction(fromAddress, toAddress, amount) {
-            // ارسال تراکنش به بلاک‌چین
-            const result = await tonClient.processing.process_message({
-                message: {
-                    to: toAddress,
-                    value: amount * 1e9, // مقدار به واحد nanoTON تبدیل می‌شود
-                    sender: fromAddress
-                }
-            });
-
-            return result;
-        }
     </script>
 </body>
 </html>
