@@ -3,79 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اتصال به کیف پول Tonkeeper</title>
-    <script src="https://cdn.jsdelivr.net/npm/tonweb/dist/tonweb.bundle.min.js"></script>
+    <title>کانکت کردن به تون کیپر</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #ton-connect-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+        #ton-connect-button:hover {
+            background-color: #0055a5;
+        }
+        #wallet-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-    <h1>اتصال به کیف پول Tonkeeper</h1>
-    <button id="connectButton">اتصال به کیف پول</button>
-    <div id="walletInfo"></div>
-    <div id="transactionForm" style="display:none;">
-        <h2>ارسال تراکنش</h2>
-        <input type="text" id="recipientAddress" placeholder="آدرس گیرنده" />
-        <input type="number" id="amount" placeholder="مقدار (TON)" />
-        <button id="sendTransaction">ارسال تراکنش</button>
-    </div>
+
+    <h1>اتصال به ولت تون کیپر</h1>
+    <button id="ton-connect-button">اتصال به تون کیپر</button>
+    
+    <div id="wallet-info"></div>
 
     <script>
-        let tonWeb = new TonWeb();  // راه‌اندازی TonWeb SDK
-        let wallet = null;
-
-        // اتصال به کیف پول
-        document.getElementById('connectButton').addEventListener('click', async () => {
-            try {
-                wallet = await tonWeb.connectWallet();  // درخواست اتصال به کیف پول
-
-                if (wallet) {
-                    const address = await wallet.getAddress();
-                    document.getElementById('walletInfo').innerHTML = `
-                        <p>آدرس کیف پول شما: ${address}</p>
-                        <button id="checkBalance">بررسی موجودی</button>
-                        <button id="showTransactionForm">ارسال تراکنش</button>
-                    `;
-                }
-            } catch (error) {
-                console.error('اتصال به کیف پول با خطا مواجه شد: ', error);
-                alert('خطا در اتصال به کیف پول');
-            }
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://your-server.com/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect-button'
         });
 
-        // بررسی موجودی کیف پول
-        document.getElementById('checkBalance').addEventListener('click', async () => {
-            try {
-                const balance = await wallet.getBalance();
-                alert(`موجودی کیف پول: ${balance / 1e9} TON`);
-            } catch (error) {
-                alert('خطا در دریافت موجودی');
-            }
-        });
-
-        // نمایش فرم ارسال تراکنش
-        document.getElementById('showTransactionForm').addEventListener('click', () => {
-            document.getElementById('transactionForm').style.display = 'block';
-        });
-
-        // ارسال تراکنش
-        document.getElementById('sendTransaction').addEventListener('click', async () => {
-            const recipientAddress = document.getElementById('recipientAddress').value;
-            const amount = document.getElementById('amount').value;
-
-            if (!recipientAddress || !amount) {
-                alert('لطفاً تمام فیلدها را پر کنید');
-                return;
-            }
-
-            try {
-                const txResult = await wallet.sendTransaction({
-                    to: recipientAddress,
-                    amount: amount * 1e9,  // مقدار به nanoTON تبدیل می‌شود
-                });
-
-                alert('تراکنش با موفقیت ارسال شد. شناسه تراکنش: ' + txResult.transaction_id);
-            } catch (error) {
-                alert('خطا در ارسال تراکنش');
-            }
+        document.getElementById("ton-connect-button").addEventListener("click", () => {
+            tonConnectUI.connect().then((wallet) => {
+                document.getElementById("wallet-info").innerHTML = `اتصال موفق! آدرس ولت: ${wallet.address}`;
+            }).catch((error) => {
+                console.error("اتصال با شکست مواجه شد:", error);
+                document.getElementById("wallet-info").innerHTML = "خطا در اتصال. لطفا دوباره تلاش کنید.";
+            });
         });
     </script>
+
 </body>
 </html>
