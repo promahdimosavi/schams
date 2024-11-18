@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اتصال به کیف پول TON</title>
+    <script src="https://cdn.jsdelivr.net/npm/tonweb@1.0.0/dist/tonweb.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            background-color: #4CAF50; 
+            color: white; 
+            padding: 15px 32px;
+            text-align: center; 
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>اتصال به کیف پول TON</h1>
+    <button id="connectButton">اتصال به کیف پول</button>
+
+    <script>
+        import TonWeb from "tonweb";
+        import { AccountSubscription } from "./account/AccountSubscription.js";
+
+        const isMainnet = true;
+
+        // استفاده از API HTTP برای ارتباط با بلاکچین TON
+        const tonweb = isMainnet ?
+            new TonWeb(new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC', { apiKey: 'YOUR_MAINNET_API_KEY' })) :
+            new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', { apiKey: 'YOUR_TESTNET_API_KEY' }));
+
+        const MY_WALLET_ADDRESS = 'UQB7AhB4fP7SWtnfnIMcVUkwIgVLKqijlcpjNEPUVontys5I';
+
+        // گوش دادن به تراکنش‌ها
+        const onTransaction = async (tx) => {
+            if (tx.in_msg.source && tx.out_msgs.length === 0) {
+                if (tx.in_msg.msg_data && tx.in_msg.msg_data['@type'] !== 'msg.dataText') {
+                    return;
+                }
+
+                const value = tx.in_msg.value;
+                const senderAddress = tx.in_msg.source;
+                const payload = tx.in_msg.message;
+
+                console.log(`دریافت ${TonWeb.utils.fromNano(value)} TON از ${senderAddress} با کامنت "${payload}"`);
+            }
+        };
+
+        // تابع برای شروع اشتراک حساب
+        const startSubscription = () => {
+            const accountSubscription = new AccountSubscription(tonweb, MY_WALLET_ADDRESS, 0, onTransaction);
+            accountSubscription.start();
+            console.log("به کیف پول متصل شدیم و در حال گوش دادن به تراکنش‌ها هستیم.");
+        };
+
+        // اضافه کردن رویداد کلیک برای دکمه اتصال
+        document.getElementById('connectButton').addEventListener('click', () => {
+            startSubscription();
+        });
+    </script>
+
+</body>
+</html>
