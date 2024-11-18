@@ -3,54 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>کانکت کردن به تون کیپر</title>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        #ton-connect-button {
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 5px;
-        }
-        #ton-connect-button:hover {
-            background-color: #0055a5;
-        }
-        #wallet-info {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+    <title>اتصال به تون کیپر</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest"></script>
 </head>
 <body>
-
-    <h1>اتصال به ولت تون کیپر</h1>
-    <button id="ton-connect-button">اتصال به تون کیپر</button>
-    
-    <div id="wallet-info"></div>
+    <button id="connectButton">اتصال به تون کیپر</button>
 
     <script>
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://your-server.com/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-button'
+        const connectButton = document.getElementById('connectButton');
+
+        // ایجاد یک نمونه از TonConnect
+        const tonConnect = new TonConnect.TonConnect({
+            manifestUrl: "https://example.com/manifest.json", // مسیر فایل manifest مینی اپ شما
+            useWSS: false, // تنظیمات ارتباط (اگر نیاز به WSS دارید آن را true کنید)
         });
 
-        document.getElementById("ton-connect-button").addEventListener("click", () => {
-            tonConnectUI.connect().then((wallet) => {
-                document.getElementById("wallet-info").innerHTML = `اتصال موفق! آدرس ولت: ${wallet.address}`;
-            }).catch((error) => {
-                console.error("اتصال با شکست مواجه شد:", error);
-                document.getElementById("wallet-info").innerHTML = "خطا در اتصال. لطفا دوباره تلاش کنید.";
-            });
+        // تابع اتصال به کیف پول
+        connectButton.addEventListener('click', async () => {
+            try {
+                await tonConnect.connect();
+                const walletAddress = await tonConnect.getAddress();
+                alert('متصل شد! آدرس والت: ' + walletAddress);
+            } catch (error) {
+                alert('خطا در اتصال: ' + error.message);
+            }
         });
     </script>
-
 </body>
 </html>
