@@ -8,7 +8,7 @@
 </head>
 <body>
     <!-- دکمه برای ارسال درخواست پرداخت -->
-    <button id="sendPaymentButton">ارسال پرداخت</button>
+    <button id="sendPaymentButton" style="background-color: red; color: white; padding: 20px; margin: 20px;">ارسال پرداخت</button>
 
     <script>
         const isMainnet = true;
@@ -18,7 +18,7 @@
             new TonWeb(new TonWeb.HttpProvider('https://toncenter.com/api/v2/jsonRPC', {apiKey: 'YOUR_MAINNET_API_KEY'})) :
             new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', {apiKey: 'YOUR_TESTNET_API_KEY'}));
 
-        const MY_WALLET_ADDRESS = 'UQB7AhB4fP7SWtnfnIMcVUkwIgVLKqijlcpjNEPUVontys5I';
+        const MY_WALLET_ADDRESS = 'UQCBYKzlgGsJSlLbkGc4x9h7J_bVnZeMXudB7fjZZEQiBsiH';
 
         // تابع برای تولید UUID
         function generateUUID() {
