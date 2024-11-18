@@ -1,0 +1,6 @@
+{
+    "name": "نام اپلیکیشن شما",
+    "url": "https://promahdimosavi.github.io/schams/",
+    "iconUrl": "https://yourwebsite.com/icon.png",
+    "permissions": ["ton_send", "ton_sign"]
+  }

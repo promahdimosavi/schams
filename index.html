@@ -3,29 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اتصال به تون کیپر</title>
+    <title>اتصال به تون کیپر در مینی‌اپ تلگرام</title>
     <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest"></script>
 </head>
-<body>
-    <button id="connectButton">اتصال به تون کیپر</button>
+<body style="direction: rtl; font-family: Arial, sans-serif; text-align: center;">
+    <h1>اتصال به والت تون کیپر</h1>
+    <button id="connectButton" style="padding: 10px 20px; font-size: 16px;">اتصال به والت</button>
+    <p id="status" style="margin-top: 20px; color: green;"></p>
 
     <script>
-        const connectButton = document.getElementById('connectButton');
-
         // ایجاد یک نمونه از TonConnect
         const tonConnect = new TonConnect.TonConnect({
-            manifestUrl: "https://example.com/manifest.json", // مسیر فایل manifest مینی اپ شما
-            useWSS: false, // تنظیمات ارتباط (اگر نیاز به WSS دارید آن را true کنید)
+            manifestUrl: "manifest.json" // لینک فایل manifest
         });
 
-        // تابع اتصال به کیف پول
+        const connectButton = document.getElementById('connectButton');
+        const status = document.getElementById('status');
+
+        // بررسی وجود کیف‌پول پیش‌فرض یا متصل
+        async function checkConnection() {
+            const wallets = await tonConnect.getWallets();
+            if (wallets.length > 0) {
+                tonConnect.restoreConnection(); // بازیابی اتصال
+                status.innerText = "یک کیف‌پول متصل شده است.";
+                console.log("Connected Wallet:", wallets[0]);
+            } else {
+                status.innerText = "کیف‌پولی متصل نشده است.";
+            }
+        }
+
+        // اجرای بررسی اتصال هنگام بارگذاری صفحه
+        checkConnection();
+
+        // تابع اتصال به کیف‌پول
         connectButton.addEventListener('click', async () => {
             try {
-                await tonConnect.connect();
-                const walletAddress = await tonConnect.getAddress();
-                alert('متصل شد! آدرس والت: ' + walletAddress);
+                const wallet = await tonConnect.connect();
+                const walletInfo = await tonConnect.getWallet();
+                status.innerText = `متصل شد! آدرس والت: ${walletInfo.address}`;
+                console.log("Wallet Info:", walletInfo);
             } catch (error) {
-                alert('خطا در اتصال: ' + error.message);
+                status.innerText = `خطا در اتصال: ${error.message}`;
+                console.error("Connection Error:", error);
             }
         });
     </script>
